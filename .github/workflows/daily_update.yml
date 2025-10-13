@@ -1,0 +1,41 @@
+name: Daily M3U Update
+
+on:
+  schedule:
+    # 每天 UTC 时间 00:00 运行 (例如，北京时间上午 8:00)
+    # 您可以根据需要调整 cron 表达式
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+    # 允许手动触发工作流
+
+jobs:
+  update-m3u:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x' # 使用最新的Python 3版本
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Run M3U update script
+        run: python update_m3u.py
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add douyuyqk_modified.m3u
+          # 检查是否有实际更改，避免空提交
+          git diff --staged --quiet || git commit -m "Update douyuyqk_modified.m3u [skip ci]"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

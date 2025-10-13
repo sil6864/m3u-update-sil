@@ -4,7 +4,7 @@ on:
   schedule:
     # 每天 UTC 时间 00:00 运行 (例如，北京时间上午 8:00)
     # 您可以根据需要调整 cron 表达式
-    - cron: '0 0 * * *'
+    - cron: '0 8 * * *'
   workflow_dispatch:
     # 允许手动触发工作流
 

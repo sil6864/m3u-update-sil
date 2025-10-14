@@ -14,9 +14,9 @@ INSERT_CONTENT_FILE = "updata.txt"
 HUYA_HEADER_END_MARKER = "https://cdn.jsdelivr.net/gh/feiyang666999/testvideo/hlg4kvideo/playlist.m3u8"
 
 # --- 辅助函数：获取并处理M3U内容 ---
-def fetch_and_process_m3u_content(url, target_group_title):
+def fetch_and_process_m3u_content(url, old_group_titles_to_replace, target_group_title):
     """
-    从指定URL获取M3U内容，并将其中的group-title值替换为target_group_title。
+    从指定URL获取M3U内容，并将其中的特定group-title值替换为target_group_title。
     """
     print(f"[{datetime.datetime.now()}] Fetching and processing M3U from: {url}")
     try:
@@ -29,11 +29,16 @@ def fetch_and_process_m3u_content(url, target_group_title):
 
     processed_lines = []
     for line in original_content.splitlines():
-        # 替换 group-title 值
         if line.startswith("#EXTINF:"):
-            # 使用正则表达式匹配 group-title="任意内容" 并替换
-            line = re.sub(r'group-title="[^"]*"', f'group-title="{target_group_title}"', line)
-        processed_lines.append(line)
+            modified_line = line
+            for old_title in old_group_titles_to_replace:
+                # 构建正则表达式，精确匹配 group-title="old_title"
+                # 使用 re.escape 来处理 old_title 中可能存在的特殊字符
+                pattern = r'group-title="' + re.escape(old_title) + r'"'
+                modified_line = re.sub(pattern, f'group-title="{target_group_title}"', modified_line)
+            processed_lines.append(modified_line)
+        else:
+            processed_lines.append(line)
     return processed_lines
 
 # --- 主更新流程函数 ---
@@ -48,20 +53,22 @@ def main_update_process():
         print(f"Content to append loaded from {INSERT_CONTENT_FILE}.")
     else:
         print(f"Error: {INSERT_CONTENT_FILE} not found. Cannot append content.")
-        # 即使文件不存在，也允许继续处理其他M3U内容
-        # return # 如果希望文件不存在就停止，则取消注释此行
 
     if not content_to_append:
         print(f"Warning: {INSERT_CONTENT_FILE} is empty. No custom content will be appended.")
 
     # 2. 处理斗鱼M3U内容
-    douyu_processed_lines = fetch_and_process_m3u_content(SOURCE_M3U_URL_DOUYU, "douyu")
+    # 指定要替换的 group-title 值
+    douyu_old_titles = ["一起看", "原创IP"]
+    douyu_processed_lines = fetch_and_process_m3u_content(SOURCE_M3U_URL_DOUYU, douyu_old_titles, "douyu")
     if douyu_processed_lines is None:
         print("Failed to process Douyu M3U. Exiting.")
         return
 
     # 3. 处理虎牙M3U内容并删除其头部
-    huya_raw_processed_lines = fetch_and_process_m3u_content(SOURCE_M3U_URL_HUYA, "huya")
+    # 指定要替换的 group-title 值
+    huya_old_titles = ["一起看", "原创"]
+    huya_raw_processed_lines = fetch_and_process_m3u_content(SOURCE_M3U_URL_HUYA, huya_old_titles, "huya")
     if huya_raw_processed_lines is None:
         print("Failed to process Huya M3U. Exiting.")
         return
@@ -99,8 +106,8 @@ def main_update_process():
     # 5. 将 updata.txt 内容添加到最终文件的尾部
     if content_to_append:
         # 确保在添加前有一个换行符，避免与前一行内容粘连
-        if final_m3u_lines and not final_m3u_lines[-1].endswith('\n'):
-             final_m3u_lines.append("") # 添加一个空行作为分隔
+        if final_m3u_lines and final_m3u_lines[-1].strip() != "": # 如果最后一行不是空行，则添加一个空行
+             final_m3u_lines.append("") 
         final_m3u_lines.append(content_to_append)
         print("Custom content from updata.txt appended to the very end.")
     else:

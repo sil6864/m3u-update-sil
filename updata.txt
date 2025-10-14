@@ -1,6 +1,6 @@
-#EXTINF:-1 tvg-logo="https://apic.douyucdn.cn/upload/avatar_v3/202308/1d1cdd6675f8403284871fa170eb0d64_big.jpg" group-title="war3", 120
+#EXTINF:-1 tvg-logo="https://apic.douyucdn.cn/upload/avatar_v3/202308/1d1cdd6675f8403284871fa170eb0d64_big.jpg" group-title="自选", 120
 https://live.ottiptv.cc/douyu/1786555
-#EXTINF:-1 tvg-logo="https://apic.douyucdn.cn/upload/avatar_v3/202108/96f9d5de6d7f4baaa83c12563a020e73_big.jpg" group-title="war3", fly
+#EXTINF:-1 tvg-logo="https://apic.douyucdn.cn/upload/avatar_v3/202108/96f9d5de6d7f4baaa83c12563a020e73_big.jpg" group-title="自选", fly
 https://live.ottiptv.cc/douyu/255329
-#EXTINF:-1 tvg-logo="https://huyaimg.msstatic.com/avatar/1041/d6/5707d35e9871fead5e7364d2b2e222_180_135.jpg?1721815630" group-title="huya", 李径看奥运
+#EXTINF:-1 tvg-logo="https://huyaimg.msstatic.com/avatar/1041/d6/5707d35e9871fead5e7364d2b2e222_180_135.jpg?1721815630" group-title="自选", 李径看奥运
 https://live.ottiptv.cc/huya/30080153

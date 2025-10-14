@@ -7,6 +7,9 @@ on:
   watch:
     types: started
 
+permissions:
+  contents: write # 确保这里有写入权限
+
 jobs:
   update-m3u:
     runs-on: ubuntu-latest
@@ -32,9 +35,10 @@ jobs:
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git add douyuyqk_modified.m3u
+          git add lunbo.m3u # <--- 确保这里是 lunbo.m3u
           # 检查是否有实际更改，避免空提交
-          git diff --staged --quiet || git commit -m "Update douyuyqk_modified.m3u [skip ci]"
+          git diff --staged --quiet || git commit -m "Update lunbo.m3u [skip ci]" # <--- 确保这里是 lunbo.m3u
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

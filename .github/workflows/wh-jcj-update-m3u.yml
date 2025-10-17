@@ -1,4 +1,4 @@
-name: Daily IPTV M3U Update # 工作流名称
+name: wh-jcj-update-m3u
 
 on:
   schedule:

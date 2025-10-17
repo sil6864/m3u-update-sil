@@ -1,6 +1,6 @@
 # .github/workflows/build-and-push.yml
 
-name: Build and Push Docker Image
+name: feiyang
 
 on:
   # push: # 注释掉或删除 push 事件

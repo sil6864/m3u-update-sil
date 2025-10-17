@@ -1,49 +1,54 @@
-name: Daily IPTV M3U Update # 工作流名称
+name: Update IPTV M3U Files
 
 on:
   schedule:
-    # 每天 UTC 时间 00:00 运行此工作流
+    # 每天 UTC 时间 00:00 运行 (即北京时间上午 8:00)
+    # 您可以根据需要调整 cron 表达式
+    # 更多 cron 表达式信息: https://crontab.guru/
     - cron: '0 0 * * *'
-  workflow_dispatch: # 允许手动触发此工作流
+  workflow_dispatch:
+    # 允许手动触发此工作流
 
 jobs:
-  update-m3u-files:
-    runs-on: ubuntu-latest # 在 Ubuntu 最新版本上运行此任务
+  update-files:
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository # 步骤1: 检出仓库代码
+      - name: Checkout repository
         uses: actions/checkout@v4
+        # 确保拉取所有历史记录，以便 git-auto-commit-action 正常工作
+        with:
+          fetch-depth: 0
 
-      - name: Download and rename M3U files # 步骤2: 下载并重命名M3U文件
+      - name: Download and rename wh-tv.m3u
         run: |
-          # 定义第一个M3U源和目标文件名，从GitHub Secrets获取URL
-          URL_WH="${{ secrets.IPTV_WH_URL }}"
-          FILENAME_WH="wh-tv.m3u"
+          # 使用 curl 下载文件并直接重命名
+          curl -o wh-tv.m3u "https://op.wh.68642820.xyz:66/iptv.m3u"
+          # 检查下载是否成功，如果文件大小为0，则删除
+          if [ ! -s wh-tv.m3u ]; then
+            echo "Warning: wh-tv.m3u downloaded file is empty or failed. Deleting it."
+            rm -f wh-tv.m3u
+          fi
 
-          # 定义第二个M3U源和目标文件名，从GitHub Secrets获取URL
-          URL_JCJ="${{ secrets.IPTV_JCJ_URL }}"
-          FILENAME_JCJ="jcj-tv.m3u"
-
-          echo "Downloading $URL_WH to $FILENAME_WH..."
-          # 使用 curl 下载文件，-s 静默模式，-o 指定输出文件
-          # 如果下载失败，则退出并报错
-          # 如果您之前为了调试添加了 -v 或移除了 -s，现在可以改回 -s
-          curl -s -o "$FILENAME_WH" "$URL_WH" || { echo "Error: Failed to download $FILENAME_WH from $URL_WH"; exit 1; }
-
-          echo "Downloading $URL_JCJ to $FILENAME_JCJ..."
-          curl -s -o "$FILENAME_JCJ" "$URL_JCJ" || { echo "Error: Failed to download $FILENAME_JCJ from $URL_JCJ"; exit 1; }
-
-          echo "All M3U files downloaded and renamed successfully."
-
-      - name: Configure Git user # 步骤3: 配置Git提交用户信息
+      - name: Download and rename jcj-tv.m3u
         run: |
-          git config user.name "GitHub Actions"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # 使用 curl 下载文件并直接重命名
+          curl -o jcj-tv.m3u "https://op.sil6864.top:66/iptv.m3u"
+          # 检查下载是否成功，如果文件大小为0，则删除
+          if [ ! -s jcj-tv.m3u ]; then
+            echo "Warning: jcj-tv.m3u downloaded file is empty or failed. Deleting it."
+            rm -f jcj-tv.m3u
+          fi
 
-      - name: Check for changes and commit # 步骤4: 检查是否有文件变动并提交
-        run: |
-          git add . # 添加所有更改到暂存区
-          # 检查是否有实际的更改。如果没有更改，git commit 会失败。
-          git diff --cached --exit-code || (git commit -m "Daily M3U update: $(date +%Y-%m-%d)" && git push)
-        env: # 确保这里只有一个 env 块
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          # 提交消息
+          commit_message: "chore: Update IPTV m3u files"
+          # 提交到哪个分支，通常是 main 或 master
+          branch: main
+          # 如果文件没有变化，则不创建新的提交
+          commit_options: '--no-verify --allow-empty'
+          # 确保即使没有文件变化也允许空提交，但通常我们只在有变化时提交
+          # 如果您希望只有在文件内容实际改变时才提交，可以移除 commit_options
+          # 默认情况下，git-auto-commit-action 只有在有实际文件更改时才会提交

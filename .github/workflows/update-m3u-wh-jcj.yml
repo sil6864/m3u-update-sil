@@ -1,0 +1,44 @@
+name: Daily IPTV M3U Update # 工作流名称
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch: # 允许手动触发此工作流
+
+jobs:
+  update-m3u-files:
+    runs-on: ubuntu-latest # 在 Ubuntu 最新版本上运行此任务
+
+    steps:
+      - name: Checkout repository # 步骤1: 检出仓库代码
+        uses: actions/checkout@v4
+
+      - name: Download and rename M3U files # 步骤2: 下载并重命名M3U文件
+        run: |
+          # 定义第一个M3U源和目标文件名，从GitHub Secrets获取URL
+          URL_WH="${{ secrets.IPTV_WH_URL }}"
+          FILENAME_WH="wh-tv.m3u"
+
+          # 定义第二个M3U源和目标文件名，从GitHub Secrets获取URL
+          URL_JCJ="${{ secrets.IPTV_JCJ_URL }}"
+          FILENAME_JCJ="jcj-tv.m3u"
+
+          echo "Downloading $URL_WH to $FILENAME_WH..."
+          curl -s -o "$FILENAME_WH" "$URL_WH" || { echo "Error: Failed to download $FILENAME_WH from $URL_WH"; exit 1; }
+
+          echo "Downloading $URL_JCJ to $FILENAME_JCJ..."
+          curl -s -o "$FILENAME_JCJ" "$URL_JCJ" || { echo "Error: Failed to download $FILENAME_JCJ from $URL_JCJ"; exit 1; }
+
+          echo "All M3U files downloaded and renamed successfully."
+
+      - name: Configure Git user # 步骤3: 配置Git提交用户信息
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Check for changes and commit # 步骤4: 检查是否有文件变动并提交
+        run: |
+          git add . # 添加所有更改到暂存区
+          git diff --cached --exit-code || (git commit -m "Daily M3U update: $(date +%Y-%m-%d)" && git push)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

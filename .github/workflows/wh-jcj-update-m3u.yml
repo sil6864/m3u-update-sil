@@ -1,7 +1,12 @@
 name: wh-jcj-update-m3u
 
+
 on:
   schedule:
+    # 每天 UTC 时间 00:00 运行此工作流
+    # 您可以根据需要调整 cron 表达式。
+    # 例如：'0 8 * * *' 表示每天 UTC 时间 08:00 运行
+    # 更多 cron 表达式信息请参考：https://crontab.guru/
     - cron: '0 0 * * *'
   workflow_dispatch: # 允许手动触发此工作流
 
@@ -15,15 +20,17 @@ jobs:
 
       - name: Download and rename M3U files # 步骤2: 下载并重命名M3U文件
         run: |
-          # 定义第一个M3U源和目标文件名，从GitHub Secrets获取URL
-          URL_WH="${{ secrets.IPTV_WH_URL }}"
+          # 定义第一个M3U源和目标文件名
+          URL_WH="https://op.wh.68642820.xyz:66/iptv.m3u"
           FILENAME_WH="wh-tv.m3u"
 
-          # 定义第二个M3U源和目标文件名，从GitHub Secrets获取URL
-          URL_JCJ="${{ secrets.IPTV_JCJ_URL }}"
+          # 定义第二个M3U源和目标文件名
+          URL_JCJ="https://op.sil6864.top:66/iptv.m3u"
           FILENAME_JCJ="jcj-tv.m3u"
 
           echo "Downloading $URL_WH to $FILENAME_WH..."
+          # 使用 curl 下载文件，-s 静默模式，-o 指定输出文件
+          # 如果下载失败，则退出并报错
           curl -s -o "$FILENAME_WH" "$URL_WH" || { echo "Error: Failed to download $FILENAME_WH from $URL_WH"; exit 1; }
 
           echo "Downloading $URL_JCJ to $FILENAME_JCJ..."
@@ -39,6 +46,14 @@ jobs:
       - name: Check for changes and commit # 步骤4: 检查是否有文件变动并提交
         run: |
           git add . # 添加所有更改到暂存区
+          # 检查是否有实际的更改。如果没有更改，git commit 会失败。
+          # `git diff --cached --exit-code` 如果有更改则返回非零，没有更改则返回零。
+          # `||` 表示前一个命令失败时才执行后面的命令。
+          git diff --cached --exit-code || (git commit -m "Daily M3U update: $(date +%Y-%m-%d)" && git push)
+        env:
+          # GITHUB_TOKEN 是 GitHub Actions 自动提供的，用于授权操作仓库
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
           git diff --cached --exit-code || (git commit -m "Daily M3U update: $(date +%Y-%m-%d)" && git push)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,4 +1,4 @@
-name: Update IPTV M3U Files
+name: wh-jcj-update-m3u
 
 on:
   schedule:

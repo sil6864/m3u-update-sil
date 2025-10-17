@@ -3,17 +3,14 @@
 name: feiyang
 
 on:
-  # push: # 注释掉或删除 push 事件
-  #   branches:
-  #     - main
-  workflow_dispatch: # 添加 workflow_dispatch 事件，启用手动触发
+  workflow_dispatch:
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
     permissions:
-      contents: read # 允许读取仓库内容
-      packages: write # 允许写入GitHub Packages (GHCR)
+      contents: read
+      packages: write
 
     steps:
       - name: Checkout repository
@@ -37,7 +34,7 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
-            type=raw,value=latest
+            type=raw,value=latest # 保持生成 latest 标签
             type=sha,format=short,prefix=
 
       - name: Build and push Docker image
@@ -45,6 +42,7 @@ jobs:
         with:
           context: .
           push: true
+          platforms: linux/arm64 # <--- 新增：指定构建 ARM64 架构的镜像
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha

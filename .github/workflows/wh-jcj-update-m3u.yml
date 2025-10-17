@@ -20,15 +20,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download and rename wh-tv.m3u
-        run: |
-          # 使用 curl 下载文件并直接重命名
-          curl -o wh-tv.m3u "https://op.wh.68642820.xyz:66/iptv.m3u"
-          # 检查下载是否成功，如果文件大小为0，则删除
-          if [ ! -s wh-tv.m3u ]; then
-            echo "Warning: wh-tv.m3u downloaded file is empty or failed. Deleting it."
-            rm -f wh-tv.m3u
-          fi
+
 
       - name: Download and rename jcj-tv.m3u
         run: |
